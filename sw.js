@@ -4,7 +4,7 @@
    - الصور: تُخدم من الجهاز إن وُجدت، وإلا تُجلب وتُحفظ (والتحميل الكامل من داخل التطبيق)
    - ملف الإكسل (الأسعار) وFirebase: لا يتدخل فيها هذا الملف أبداً — يتولاها التطبيق نفسه
    غيّر VERSION عند أي تعديل على هذا الملف. */
-const VERSION = '2026-10-30.1';
+const VERSION = '2026-10-30.2';
 const SHELL = 'mooma-shell-' + VERSION;
 const LIB   = 'mooma-lib-v1';
 const IMG   = 'mooma-img-v1';
@@ -16,6 +16,7 @@ const LIBS = [
   'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js',
   'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js',
   'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
   'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js',
   'https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap'
 ];
