@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <!-- SEO -->
 <meta name="description" content="MOOMA — نظام إدارة المخزون والطلبيات لMooma">
@@ -487,6 +487,7 @@ body.light-mode #offBar{background:#fff3cd;color:#7a5b00;}
 .mx-btn.gold{background:linear-gradient(135deg,#7fa88c,#8b6914);color:#000;border:none;}
 .mx-btn.red{color:#d73a49;border-color:rgba(215,58,73,.4);}
 .mx-btn:disabled{opacity:.5;}
+html{-webkit-text-size-adjust:100%}@media(max-width:900px){input,select,textarea{font-size:16px!important}}
 </style>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2153,8 +2154,9 @@ async function saveToFirestore() {
 
     // سؤال: فاتورة جديدة؟
     setTimeout(() => {
-      if (confirm('تم الحفظ!\nهل تريد فتح فاتورة جديدة؟')) newInvoice();
-    }, 500);
+      if (window.MZ) MZ.after(invoiceData, newInvoice);
+      else if (confirm('تم الحفظ!\nهل تريد بدء فاتورة جديدة؟')) newInvoice();
+    }, 400);
 
   } catch(e) {
     alert('خطأ في الحفظ: ' + e.message);
@@ -2935,7 +2937,7 @@ const r={no:'RC-'+k,customerId:sel.id,customerName:sel.name,phone:sel.phone||'',
 const b=db.batch();b.set(db.collection('receipts').doc(r.no),r);b.update(db.collection('customers').doc(sel.id),{balance:F.increment(-a)});b.commit().catch(console.error);sel.balance=(sel.balance||0)-a;view();prt(r)}
 function ed(id){const r=R.find(x=>x.id==id),v=parseFloat(prompt('المبلغ الصحيح لـ '+r.customerName,r.amount));if(!(v>0)||v==r.amount)return;const b=db.batch();b.update(db.collection('receipts').doc(id),{amount:v,editedAt:Date.now()});b.update(db.collection('customers').doc(r.customerId),{balance:F.increment(r.amount-v)});b.commit().catch(console.error);tt('تم التعديل وتصحيح رصيد الزبون')}
 function vd(id){const r=R.find(x=>x.id==id);if(!confirm('حذف السند '+r.no+'؟ سيعود مبلغ '+nm(r.amount)+' إلى دين الزبون.'))return;const b=db.batch();b.update(db.collection('receipts').doc(id),{status:'void',voidAt:Date.now()});b.update(db.collection('customers').doc(r.customerId),{balance:F.increment(r.amount)});b.commit().catch(console.error);tt('تم الحذف وإرجاع المبلغ للدين')}
-function prt(r){const h=t=>`<div class=rch><div class=rcx><div><img src="${LOGO_URI}" style="height:52px"><small>${t}</small></div><div style="text-align:left"><b style="font-size:18px">سند قبض</b><br>${r.no}<br><small>${dt(r.ts)}</small></div></div><table><tr><td>استلمنا من السيد/ـة</td><td><b>${esc(r.customerName)}</b> ${esc(r.phone)}</td></tr><tr><td>مبلغاً وقدره</td><td><b style="font-size:20px">${nm(r.amount)}</b></td></tr><tr><td>الدين قبل القبض</td><td>${nm(r.prev)}</td></tr><tr><td>المتبقي بعد القبض</td><td><b style="color:#d73a49">${nm(r.prev-r.amount)}</b></td></tr>${r.note?`<tr><td>ملاحظة</td><td>${esc(r.note)}</td></tr>`:''}</table><div class=rcs><span>توقيع المستلم</span><span>توقيع الزبون</span></div></div>`;
+function prt(r){const h=t=>`<div class=rch><div class=rcx><div><img src="${LOGO_URI}" style="height:52px"><small>${t}</small></div><div style="text-align:left"><b style="font-size:18px">سند قبض</b><br>${r.no}<br><small>${dt(r.ts)}</small></div></div><table><tr><td>استلمنا من السيد/ـة</td><td><b>${esc(r.customerName)}</b> ${esc(r.phone)}</td></tr><tr><td>مبلغاً وقدره</td><td><b style="font-size:20px">${nm(r.amount)}</b></td></tr>${r.cash?'':`<tr><td>الدين قبل القبض</td><td>${nm(r.prev)}</td></tr><tr><td>المتبقي بعد القبض</td><td><b style="color:#d73a49">${nm(r.prev-r.amount)}</b></td></tr>`}${r.note?`<tr><td>ملاحظة</td><td>${esc(r.note)}</td></tr>`:''}</table><div class=rcs><span>توقيع المستلم</span><span>توقيع الزبون</span></div></div>`;
 let p=$('mxP');if(!p){p=document.createElement('div');p.id='mxP';document.body.appendChild(p)}p.innerHTML=h('نسخة الزبون')+'<div class=rcc>✂ - - - - - - - - - - - - - - - - - - - -</div>'+h('نسخة الشركة');const st=document.createElement('style');st.textContent='@page{size:A4;margin:8mm}';document.head.appendChild(st);document.body.classList.add('mxprint');const end=()=>{document.body.classList.remove('mxprint');st.remove();removeEventListener('afterprint',end)};addEventListener('afterprint',end);setTimeout(()=>print(),200)}
 function sl(v){v=v.trim().toLowerCase();const a=(typeof items!='undefined'?items:[]).filter(i=>!v||String(i.name).toLowerCase().includes(v)||String(i.code).toLowerCase().includes(v)).slice(0,80);$('mxl2').innerHTML=a.map(i=>{const q=ST[i.id]??'—';return`<div class="mxc mxs"><div>${esc(i.name)}<br><small>${esc(i.code||'')}</small></div><button onclick="MZ.sq2('${i.id}')" style="color:${q!='—'&&q<=5?'var(--red)':'var(--green)'}"><b>${q}</b> ✏️</button></div>`}).join('')||'<small>لا توجد مواد</small>'}
 function sq2(id){const i=items.find(x=>x.id==id),v=parseFloat(prompt('الكمية الحالية في المخزون: '+i.name,ST[id]??0));if(isNaN(v))return;db.collection('stock').doc(String(id)).set({qty:v,name:i.name},{merge:true}).catch(console.error);ST[id]=v;sl($('mxs').value)}
@@ -2990,9 +2992,13 @@ function od2(){const v=parseInt(prompt('عدد الأيام',localStorage.getIte
 function rw(id){const c=C.find(x=>x.id==id);wa(c.phone,`السلام عليكم ${c.name} 🌸\nنذكّركم بأن الرصيد المستحق عليكم: ${nm(c.balance)}\nنرجو التسديد في أقرب وقت، شكراً لتعاملكم.\nMOOMA`)}
 function pk2(id){M='rc';view();nr();pk(id)}
 function chk(ents,rem,cid){const c=C.find(x=>x.id==cid);if(c&&c.limit>0&&(c.balance||0)+rem>c.limit&&!confirm('⚠️ تجاوز حد الدين!\nحد '+c.name+': '+nm(c.limit)+'\nالدين بعد الفاتورة: '+nm((c.balance||0)+rem)+'\nمتابعة؟'))return false;const low=ents.filter(([id,q])=>ST[id]!==undefined&&q>ST[id]).map(([id,q])=>{const i=items.find(x=>x.id==id);return (i?i.name:id)+' (متوفر '+ST[id]+'، مطلوب '+q+')'});return !(low.length&&!confirm('الكمية المطلوبة أكبر من المخزون:\n'+low.join('\n')+'\nمتابعة؟'))}
+function printHTML(h){const f=document.createElement('iframe');f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';f.srcdoc=h;f.onload=()=>{setTimeout(()=>{try{f.contentWindow.focus();f.contentWindow.print()}catch(e){}setTimeout(()=>f.remove(),6e4)},500)};document.body.appendChild(f)}
+function after(d,done){const pi=confirm('✅ تم حفظ الفاتورة\nهل تريد طباعة الفاتورة؟');if(pi){try{printHTML(invHTML(invNorm(d)))}catch(e){console.error(e)}}const cash=d.remaining<=0&&d.paid>0;
+setTimeout(()=>{if(cash&&confirm('فاتورة نقدية 💵\nهل تريد طباعة سند قبض؟'))prt({no:d.invoiceNo,customerName:d.customerName,phone:d.custPhone||'',addr:d.custAddr||'',amount:d.paid,prev:0,note:'عن فاتورة '+d.invoiceNo,ts:Date.now(),cash:true});
+setTimeout(()=>{if(confirm('هل تريد بدء فاتورة جديدة؟'))done()},cash?1500:300)},pi?1800:200)}
 function cp(){const v=parseInt(prompt('عدد نسخ الفاتورة عند الطباعة (1-10)',localStorage.getItem('mooma_copies')||1));if(v>0)localStorage.setItem('mooma_copies',Math.min(v,10))}
 
-window.MZ={rpt,stm,sp,sw,lm,od2,rw,pk2,chk,cust:id=>C.find(c=>c.id==id),il,vi,fp,cx,cp,open,close,nr,sq,pk,rm,sv,ed,vd,pr,sl,sq2,exp,imp,dir,dl,rs}
+window.MZ={after,rpt,stm,sp,sw,lm,od2,rw,pk2,chk,cust:id=>C.find(c=>c.id==id),il,vi,fp,cx,cp,open,close,nr,sq,pk,rm,sv,ed,vd,pr,sl,sq2,exp,imp,dir,dl,rs}
 })();
 </script>
 </body>
