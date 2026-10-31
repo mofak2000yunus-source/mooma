@@ -487,7 +487,7 @@ body.light-mode #offBar{background:#fff3cd;color:#7a5b00;}
 .mx-btn.gold{background:linear-gradient(135deg,#7fa88c,#8b6914);color:#000;border:none;}
 .mx-btn.red{color:#d73a49;border-color:rgba(215,58,73,.4);}
 .mx-btn:disabled{opacity:.5;}
-html{-webkit-text-size-adjust:100%}@media(max-width:900px){input,select,textarea{font-size:16px!important}}
+html,body{max-width:100%;overflow-x:hidden;overscroll-behavior-x:none;-webkit-text-size-adjust:100%;touch-action:pan-x pan-y}.filters-row>*,.hdr-r2>*{min-width:0}.fsel{min-width:0;width:0;text-overflow:ellipsis}.hdr-r2 .srch{min-width:0;width:0}#grid{max-width:100%}
 </style>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -3001,5 +3001,6 @@ function cp(){const v=parseInt(prompt('عدد نسخ الفاتورة عند ا�
 window.MZ={after,rpt,stm,sp,sw,lm,od2,rw,pk2,chk,cust:id=>C.find(c=>c.id==id),il,vi,fp,cx,cp,open,close,nr,sq,pk,rm,sv,ed,vd,pr,sl,sq2,exp,imp,dir,dl,rs}
 })();
 </script>
+<script>['gesturestart','gesturechange','gestureend'].forEach(e=>document.addEventListener(e,x=>x.preventDefault()));let _lt=0;document.addEventListener('touchend',e=>{const n=Date.now();if(n-_lt<300&&!/INPUT|TEXTAREA|SELECT|BUTTON|A/.test(e.target.tagName))e.preventDefault();_lt=n},{passive:false});</script>
 </body>
 </html>
