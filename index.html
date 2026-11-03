@@ -3063,7 +3063,7 @@ function applePrint(fullHtml,r){
  setTimeout(()=>URL.revokeObjectURL(url),60000)}
 function oldIframePrint(h){const f=document.createElement('iframe');f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';f.srcdoc=h;f.onload=()=>{setTimeout(()=>{try{f.contentWindow.focus();f.contentWindow.print()}catch(e){}setTimeout(()=>f.remove(),6e4)},500)};document.body.appendChild(f)}
 function P(d,withInv,r,alt){
- if(isApple()){if(withInv&&!r&&!alt)oldIframePrint(invHTML(invNorm(d)));else applePrint(withInv?invHTML(invNorm(d)):'',r);return}
+ if(isApple()){applePrint(withInv?invHTML(invNorm(d)):'',r);return}
  if(r){prepDoc('',r);runPrint(null);return}
  prepDoc(invHTML(invNorm(d)),null);const im=[...$('mxP').shadowRoot.querySelectorAll('img')].filter(i=>!i.complete);if(im.length)setTimeout(()=>runPrint(null),600);else runPrint(null)}
 function askPrint(d,cash,wa,done){
@@ -3071,10 +3071,10 @@ function askPrint(d,cash,wa,done){
  let o=$('mxA');if(o)o.remove();o=document.createElement('div');o.id='mxA';
  o.style.cssText='position:fixed;inset:0;background:#000b;z-index:9600;display:flex;align-items:center;justify-content:center;padding:18px;direction:rtl';
  const bs='width:100%;padding:14px;border-radius:12px;font:inherit;font-weight:800;font-size:15px;cursor:pointer;margin-top:10px;border:1px solid var(--bdr);';
- o.innerHTML=`<div style="background:var(--bg2);color:var(--white);border:1px solid var(--gold3);border-radius:18px;padding:20px;width:100%;max-width:360px;text-align:center;font-family:Cairo,sans-serif"><div style="font-size:34px">✅</div><div style="font-weight:900;font-size:16px;margin:6px 0">تم حفظ الفاتورة</div><div style="color:var(--muted);font-size:13px">${esc(d.invoiceNo)}${cash?(d.remaining>0?' — دفعة جزئية 💵':' — نقدية 💵'):''}</div><button id="mxAp" style="${bs}background:var(--gold);color:#fff;border:0">🖨 طباعة الفاتورة</button>${cash?`<button id="mxAr" style="${bs}background:var(--gold);color:#fff;border:0">🧾 طباعة سند القبض</button>`:''}${isApple()?`<button id="mxAa" style="${bs}background:var(--bg3);color:var(--white);font-size:13px">طباعة بديلة (صفحة مستقلة)</button>`:''}<button id="mxAn" style="${bs}background:var(--bg3);color:var(--white)">${wa?'متابعة ('+(wa.label||'واتساب')+') ➜':'فاتورة جديدة ➜'}</button></div>`;
+ o.innerHTML=`<div style="background:var(--bg2);color:var(--white);border:1px solid var(--gold3);border-radius:18px;padding:20px;width:100%;max-width:360px;text-align:center;font-family:Cairo,sans-serif"><div style="font-size:34px">✅</div><div style="font-weight:900;font-size:16px;margin:6px 0">تم حفظ الفاتورة</div><div style="color:var(--muted);font-size:13px">${esc(d.invoiceNo)}${cash?(d.remaining>0?' — دفعة جزئية 💵':' — نقدية 💵'):''}</div><button id="mxAp" style="${bs}background:var(--gold);color:#fff;border:0">🖨 طباعة الفاتورة</button>${cash?`<button id="mxAr" style="${bs}background:var(--gold);color:#fff;border:0">🧾 طباعة سند القبض</button>`:''}<button id="mxAn" style="${bs}background:var(--bg3);color:var(--white)">${wa?'متابعة ('+(wa.label||'واتساب')+') ➜':'فاتورة جديدة ➜'}</button></div>`;
  document.body.appendChild(o);
  const fin=()=>{o.remove();const q=$('mxP');if(q)q.remove();if(wa)wa();else done()};
- $('mxAp').onclick=()=>P(d,true,null);if($('mxAa'))$('mxAa').onclick=()=>P(d,true,null,1);
+ $('mxAp').onclick=()=>P(d,true,null);
  if($('mxAr'))$('mxAr').onclick=()=>P(d,false,rcOf(d));
  $('mxAn').onclick=fin}
 function pp(h){let p=$('mxP');if(!p){p=document.createElement('div');p.id='mxP';document.body.appendChild(p)}p.innerHTML=h;const st=document.createElement('style');st.textContent='@page{size:A4;margin:8mm}';document.head.appendChild(st);document.body.classList.add('mxprint');const end=()=>{document.body.classList.remove('mxprint');st.remove();removeEventListener('afterprint',end)};addEventListener('afterprint',end);setTimeout(()=>print(),200)}
