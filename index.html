@@ -1543,15 +1543,17 @@ function toggleTheme(){
 })();
 
 // ══ ORDER MODAL ══
+/* رقم الفاتورة التالي = الأكبر بين العدّاد المحلي وأعلى رقم محفوظ في قاعدة البيانات (لا يعود إلى 1 بعد حذف التطبيق) */
+function nextInvNo(){let l=0;try{l=parseInt(localStorage.getItem('inv_counter')||'0')||0}catch(e){}
+let m=0;try{m=(window.MZ&&MZ.invMax)?MZ.invMax():0}catch(e){}
+const n=Math.max(l,m)+1;try{localStorage.setItem('inv_counter',n)}catch(e){}return n}
 function openOrd(){
   const now=new Date();
   document.getElementById('ordDate').textContent=now.toLocaleDateString('ar',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   document.getElementById('odate').value=now.toLocaleDateString('en-GB');
   if(!document.getElementById('invN').value)
     if(!document.getElementById('invN').value){
-      let n=parseInt(localStorage.getItem('inv_counter')||'0')+1;
-      localStorage.setItem('inv_counter',n);
-      document.getElementById('invN').value='INV - '+n;
+      document.getElementById('invN').value='INV - '+nextInvNo();
     }
   renderOrdTbl();
   document.getElementById('ordOvl').className='ord-ovl on';
@@ -2117,9 +2119,7 @@ function newInvoice() { if(window.setPay) setPay("credit");
   document.getElementById('custDropdown').style.display   = 'none';
 
   // رقم فاتورة جديد
-  let n = parseInt(localStorage.getItem('inv_counter') || '0') + 1;
-  localStorage.setItem('inv_counter', n);
-  document.getElementById('invN').value = 'INV - ' + n;
+  document.getElementById('invN').value = 'INV - ' + nextInvNo();
 
   // تاريخ جديد
   const now = new Date();
@@ -3061,8 +3061,9 @@ function applePrint(fullHtml,r){
  const url=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'}));
  const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove();
  setTimeout(()=>URL.revokeObjectURL(url),60000)}
-function P(d,withInv,r){
- if(isApple()){applePrint(withInv?invHTML(invNorm(d)):'',r);return}
+function oldIframePrint(h){const f=document.createElement('iframe');f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';f.srcdoc=h;f.onload=()=>{setTimeout(()=>{try{f.contentWindow.focus();f.contentWindow.print()}catch(e){}setTimeout(()=>f.remove(),6e4)},500)};document.body.appendChild(f)}
+function P(d,withInv,r,alt){
+ if(isApple()){if(withInv&&!r&&!alt)oldIframePrint(invHTML(invNorm(d)));else applePrint(withInv?invHTML(invNorm(d)):'',r);return}
  if(r){prepDoc('',r);runPrint(null);return}
  prepDoc(invHTML(invNorm(d)),null);const im=[...$('mxP').shadowRoot.querySelectorAll('img')].filter(i=>!i.complete);if(im.length)setTimeout(()=>runPrint(null),600);else runPrint(null)}
 function askPrint(d,cash,wa,done){
@@ -3070,10 +3071,10 @@ function askPrint(d,cash,wa,done){
  let o=$('mxA');if(o)o.remove();o=document.createElement('div');o.id='mxA';
  o.style.cssText='position:fixed;inset:0;background:#000b;z-index:9600;display:flex;align-items:center;justify-content:center;padding:18px;direction:rtl';
  const bs='width:100%;padding:14px;border-radius:12px;font:inherit;font-weight:800;font-size:15px;cursor:pointer;margin-top:10px;border:1px solid var(--bdr);';
- o.innerHTML=`<div style="background:var(--bg2);color:var(--white);border:1px solid var(--gold3);border-radius:18px;padding:20px;width:100%;max-width:360px;text-align:center;font-family:Cairo,sans-serif"><div style="font-size:34px">✅</div><div style="font-weight:900;font-size:16px;margin:6px 0">تم حفظ الفاتورة</div><div style="color:var(--muted);font-size:13px">${esc(d.invoiceNo)}${cash?(d.remaining>0?' — دفعة جزئية 💵':' — نقدية 💵'):''}</div><button id="mxAp" style="${bs}background:var(--gold);color:#fff;border:0">🖨 طباعة الفاتورة</button>${cash?`<button id="mxAr" style="${bs}background:var(--gold);color:#fff;border:0">🧾 طباعة سند القبض</button>`:''}<button id="mxAn" style="${bs}background:var(--bg3);color:var(--white)">${wa?'متابعة ('+(wa.label||'واتساب')+') ➜':'فاتورة جديدة ➜'}</button></div>`;
+ o.innerHTML=`<div style="background:var(--bg2);color:var(--white);border:1px solid var(--gold3);border-radius:18px;padding:20px;width:100%;max-width:360px;text-align:center;font-family:Cairo,sans-serif"><div style="font-size:34px">✅</div><div style="font-weight:900;font-size:16px;margin:6px 0">تم حفظ الفاتورة</div><div style="color:var(--muted);font-size:13px">${esc(d.invoiceNo)}${cash?(d.remaining>0?' — دفعة جزئية 💵':' — نقدية 💵'):''}</div><button id="mxAp" style="${bs}background:var(--gold);color:#fff;border:0">🖨 طباعة الفاتورة</button>${cash?`<button id="mxAr" style="${bs}background:var(--gold);color:#fff;border:0">🧾 طباعة سند القبض</button>`:''}${isApple()?`<button id="mxAa" style="${bs}background:var(--bg3);color:var(--white);font-size:13px">طباعة بديلة (صفحة مستقلة)</button>`:''}<button id="mxAn" style="${bs}background:var(--bg3);color:var(--white)">${wa?'متابعة ('+(wa.label||'واتساب')+') ➜':'فاتورة جديدة ➜'}</button></div>`;
  document.body.appendChild(o);
  const fin=()=>{o.remove();const q=$('mxP');if(q)q.remove();if(wa)wa();else done()};
- $('mxAp').onclick=()=>P(d,true,null);
+ $('mxAp').onclick=()=>P(d,true,null);if($('mxAa'))$('mxAa').onclick=()=>P(d,true,null,1);
  if($('mxAr'))$('mxAr').onclick=()=>P(d,false,rcOf(d));
  $('mxAn').onclick=fin}
 function pp(h){let p=$('mxP');if(!p){p=document.createElement('div');p.id='mxP';document.body.appendChild(p)}p.innerHTML=h;const st=document.createElement('style');st.textContent='@page{size:A4;margin:8mm}';document.head.appendChild(st);document.body.classList.add('mxprint');const end=()=>{document.body.classList.remove('mxprint');st.remove();removeEventListener('afterprint',end)};addEventListener('afterprint',end);setTimeout(()=>print(),200)}
@@ -3112,7 +3113,7 @@ function after(d,done,wa){try{saveInvRc(d)}catch(e){console.error(e)}try{askPrin
 function cp(){const v=parseInt(prompt('عدد نسخ الفاتورة عند الطباعة (1-10)',localStorage.getItem('mooma_copies')||1));if(v>0)localStorage.setItem('mooma_copies',Math.min(v,10))}
 
 const _af=window.applyF;if(_af)window.applyF=function(){applyStock();return _af.apply(this,arguments)};
-window.MZ={printDoc,applyStock,deduct,after,rpt,stm,sp,sw,lm,od2,rw,pk2,chk,cust:id=>C.find(c=>c.id==id),il,vi,fp,cx,cp,open,close,nr,sq,pk,rm,sv,ed,vd,pr,sl,sq2,exp,imp,dir,dl,rs}
+window.MZ={invMax:()=>Math.max(0,...I.map(d=>parseInt(String(d.invoiceNo||d.id).replace(/\D/g,''))||0)),printDoc,applyStock,deduct,after,rpt,stm,sp,sw,lm,od2,rw,pk2,chk,cust:id=>C.find(c=>c.id==id),il,vi,fp,cx,cp,open,close,nr,sq,pk,rm,sv,ed,vd,pr,sl,sq2,exp,imp,dir,dl,rs}
 })();
 </script>
 <script>['gesturestart','gesturechange','gestureend'].forEach(e=>document.addEventListener(e,x=>x.preventDefault()));window._pay='credit';
