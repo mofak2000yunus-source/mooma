@@ -492,6 +492,8 @@ html,body{max-width:100%;overflow-x:hidden;overscroll-behavior-x:none;-webkit-te
 .sprice{color:#fff}.scode{direction:ltr;font-size:17px;font-weight:900;letter-spacing:.3px;word-break:break-all;line-height:1.3}
 .card-act{padding:0 12px 12px;display:flex;flex-direction:column;gap:8px;background:var(--bg2)}.qty-in{background:var(--bg3);border:1px solid var(--bdr);border-radius:10px;padding:10px 4px;color:var(--white);font-family:'Cairo',sans-serif;font-size:18px;font-weight:800;text-align:center;outline:none;width:100%}.qty-in:focus{border-color:var(--gold)}
 .add-btn{background:var(--gold);color:#0d1117;border:0;border-radius:10px;padding:11px 6px;font-family:'Cairo',sans-serif;font-weight:900;font-size:15px;cursor:pointer;width:100%}.add-btn:active{transform:scale(.97)}.add-btn.disabled{opacity:.35;pointer-events:none}.rem-hint{font-size:12px;color:var(--muted);text-align:center}
+.qty-in{padding:7px 4px;font-size:17px}.add-btn{padding:7px 6px;font-size:14px;border-radius:9px}.card-act{gap:6px}
+.srow.sprice{font-size:30px;line-height:1.2;background:rgba(127,168,140,.2);border:2px solid var(--gold);border-radius:10px;margin:6px;padding:8px 6px}.sprice .sl{font-size:14px;opacity:.85}.srow+.srow{border-top:0}
 </style>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1262,8 +1264,8 @@ function cardHTML(it,idx){
       ${it.barcode?`<div class="sbarcode">${esc(it.barcode)}</div>`:''}
     </div>
     <div class="card-act">
-      <input type="number" inputmode="numeric" min="1" class="qty-in" id="q${it.id}" value="${it.pack||''}" ${it.rem>0?'':'disabled'}>
-      <button class="add-btn${it.rem>0?'':' disabled'}" onclick="addOrd(${it.id},this)">${it.rem>0?'🛒 إضافة إلى السلة':'⛔ نفد المخزون'}</button>
+      <input type="number" inputmode="numeric" min="1" class="qty-in" id="q${it.id}" value="12" ${it.rem>0?'':'disabled'}>
+      <button class="add-btn${it.rem>0?'':' disabled'}" onclick="addOrd(${it.id},this)">${it.rem>0?'🛒 طلب':'⛔ نفد المخزون'}</button>
       <div class="rem-hint">${it.rem>0?'متوفر: '+it.rem:'غير متوفر'}</div>
     </div>
   </div>`;}
@@ -1426,7 +1428,7 @@ function addOrd(id,btn){
   const raw=parseInt(qEl?.value);
   if(!raw||raw<1){showToast('⚠️ أدخل الكمية أولاً');return;}
   if(raw>it.rem){showToast('🚫 الكمية ('+raw+') أكبر من المتوفر ('+it.rem+')');return;}
-  order[id]=(order[id]||0)+raw; updBadge(); qEl.value=it.pack||'';
+  order[id]=(order[id]||0)+raw; updBadge(); qEl.value='12';
   const orig=btn.innerHTML;
   btn.innerHTML='✔ تمت الإضافة';btn.style.background='#3fb950';btn.style.color='#000';
   setTimeout(()=>{btn.innerHTML=orig;btn.style.background='';btn.style.color='';},1200);
