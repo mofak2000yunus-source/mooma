@@ -2955,7 +2955,7 @@ async function closeScanner() {
 #mxm{position:fixed;inset:0;background:#000a;z-index:9000;display:none;align-items:flex-end;justify-content:center}.mxp{background:var(--bg);color:var(--white);width:100%;max-width:640px;max-height:92vh;overflow:auto;padding:14px;border-radius:20px 20px 0 0;direction:rtl}
 .mxs{display:flex;justify-content:space-between;align-items:center;gap:8px}.mxc{background:var(--bg2);border:1px solid var(--bdr);border-radius:12px;padding:10px;margin:8px 0}.mxc.vd{opacity:.5}.mxp input{width:100%;padding:10px;margin:4px 0 8px;border-radius:10px;border:1px solid var(--bdr);background:var(--bg3);color:var(--white);font:inherit}.mxp button{background:var(--bg3);color:var(--white);border:1px solid var(--bdr);border-radius:10px;padding:7px 12px;font:inherit;cursor:pointer}.mxp .mxbtn{width:100%;background:var(--gold);color:#fff;border:0;padding:12px;font-weight:700;margin:6px 0}.mxp label{font-size:13px;color:var(--muted)}
 #mxP{display:none}.rch{height:138mm;padding:6mm;color:#222;font-family:Cairo,Arial,sans-serif}.rcx{display:flex;justify-content:space-between;border-bottom:3px solid #7fa88c;padding-bottom:6px}.rch table{width:100%;border-collapse:collapse;margin-top:8px}.rch td{padding:8px;border-bottom:1px solid #ddd}.rch td:first-child{width:35%;color:#666}.rcs{display:flex;justify-content:space-around;margin-top:20px;color:#888;font-size:12px}.rcs span{border-top:1px solid #aaa;width:35%;text-align:center;padding-top:4px}.rcc{text-align:center;color:#aaa;font-size:12px}
-@media print{body.mxprint>*:not(#mxP){display:none!important}body.mxprint #mxP{display:block!important;background:#fff}}
+@media print{html,body,body.mxprint{overflow:visible!important;height:auto!important;min-height:0!important;max-height:none!important}body.mxprint>*:not(#mxP){display:none!important}body.mxprint #mxP{display:block!important;background:#fff;width:100%!important}}
 </style><script>
 (function(){
 const $=id=>document.getElementById(id),F=firebase.firestore.FieldValue,TS=firebase.firestore.Timestamp,nm=v=>Number(v||0).toLocaleString('en-US')+' د.ع',
@@ -3012,13 +3012,13 @@ function pr(id){prt(R.find(x=>x.id==id))}
 V.iv=()=>{$('mxb').innerHTML=`<input id=mxs placeholder="🔍 رقم الفاتورة أو اسم الزبون" oninput="MZ.il(this.value)"><div id=mxl2></div>`;il('')};
 function il(v){v=v.trim().toLowerCase();$('mxl2').innerHTML=I.filter(d=>!v||(d.invoiceNo+' '+d.customerName).toLowerCase().includes(v)).slice(0,60).map(d=>`<div class="mxc ${d.status=='cancelled'?'vd':''}" onclick="MZ.vi('${d.id}')"><div class=mxs><b>${esc(d.customerName)}</b><b>${nm(d.netTotal)}</b></div><small>${esc(d.invoiceNo)} · ${dt(d.ts||(d.date&&d.date.toMillis?d.date.toMillis():0))}${d.remaining>0?' · متبقي '+nm(d.remaining):''}${d.status=='cancelled'?' · ملغاة':''}</small></div>`).join('')||'<small>لا توجد فواتير</small>'}
 function vi(id){const d=I.find(x=>x.id==id);_cv=d;try{prepDoc(invHTML(invNorm(d)),null)}catch(e){}M='vw';$('mxm').style.display='flex';$('mxm').innerHTML=`<div class=mxp><div class=mxs><b>${esc(d.invoiceNo)}</b><button onclick="MZ.open('iv')">رجوع</button></div><iframe id=mxfr style="width:100%;height:62vh;border:1px solid var(--bdr);border-radius:10px;background:#fff;margin-top:8px" srcdoc="${esc(invHTML(invNorm(d)))}"></iframe><div class=mxs style="margin-top:8px"><button class=mxbtn style="margin:0" onclick="MZ.fp()">🖨 طباعة</button>${d.paid>0?`<button class=mxbtn style="margin:0" onclick="MZ.fp(1)">🖨 فاتورة + سند قبض</button>`:''}${d.status!='cancelled'?`<button style="color:var(--red)" onclick="MZ.cx('${id}')">إلغاء الفاتورة</button>`:''}</div></div>`}
-let _cv=null;function fp(rc){const d=_cv;if(!d)return;if(rc&&d.paid>0)prepDoc(invHTML(invNorm(d)),rcOf(d));const im=[...$('mxP').shadowRoot.querySelectorAll('img')].filter(i=>!i.complete);if(im.length)setTimeout(()=>runPrint(null),700);else runPrint(null)}
+let _cv=null;function fp(rc){const d=_cv;if(!d)return;prepDoc(invHTML(invNorm(d)),(rc&&d.paid>0)?rcOf(d):null);const im=[...$('mxP').shadowRoot.querySelectorAll('img')].filter(i=>!i.complete);if(im.length)setTimeout(()=>runPrint(null),700);else runPrint(null)}
 function rcOf(d){return{no:d.invoiceNo,customerName:d.customerName,phone:d.custPhone||'',addr:d.custAddr||'',amount:d.paid,prev:0,rem:d.remaining||0,note:'عن فاتورة '+d.invoiceNo,ts:d.ts||Date.now(),cash:true}}
 function cx(id){const d=I.find(x=>x.id==id);if(!confirm('إلغاء الفاتورة '+d.invoiceNo+'؟ ستعود الكميات للمخزون ويُصحَّح دين الزبون.'))return;const b=db.batch();b.update(db.collection('invoices').doc(id),{status:'cancelled',cancelledAt:Date.now()});(d.items||[]).forEach(t=>{const i=items.find(x=>x.code==t.productCode||x.id==t.productId);if(!i)return;const nv=(i.rem||0)+t.qty,k=skey(i);b.set(db.collection('stock').doc(k),{qty:nv,name:i.name,code:i.code},{merge:true});i.rem=nv;ST[k]=nv});if(d.customerId&&d.remaining>0)b.update(db.collection('customers').doc(d.customerId),{balance:F.increment(-d.remaining)});b.commit().catch(console.error);d.status='cancelled';tt('تم إلغاء الفاتورة');vi(id)}
 async function hashOpen(){const m=/#inv=(.+)/.exec(location.hash);if(!m||!auth.currentUser)return;try{const s=await db.collection('invoices').doc(decodeURIComponent(m[1])).get();if(!s.exists)return tt('الفاتورة غير موجودة');const d={id:s.id,...s.data()};if(!I.find(x=>x.id==d.id))I.push(d);vi(d.id)}catch{tt('تعذر فتح الفاتورة')}history.replaceState(null,'',location.pathname)}
 const sty=document.createElement('style');sty.textContent='.stm{padding:6mm;color:#222;font-family:Cairo,Arial,sans-serif}.stm table{width:100%;border-collapse:collapse;margin:10px 0}.stm td,.stm th{padding:6px;border-bottom:1px solid #ddd;text-align:right}.stm th{background:#eaf2ec}';document.head.appendChild(sty);
 
-const RCSS='.rch{height:136mm;padding:5mm 6mm;color:#222;font-family:Cairo,Arial,sans-serif}.rcx{display:flex;justify-content:space-between;border-bottom:3px solid #7fa88c;padding-bottom:6px}.rch table{width:100%;border-collapse:collapse;margin-top:8px}.rch td{padding:8px;border-bottom:1px solid #ddd}.rch td:first-child{width:35%;color:#666}.rcs{display:flex;justify-content:space-around;margin-top:20px;color:#888;font-size:12px}.rcs span{border-top:1px solid #aaa;width:35%;text-align:center;padding-top:4px}.rcc{text-align:center;color:#aaa;font-size:12px;height:6mm;line-height:6mm}.rcpg{padding:4mm 8mm 0;page-break-before:always;break-before:page}';
+const RCSS='.rch{height:136mm;padding:5mm 6mm;color:#222;font-family:Cairo,Arial,sans-serif}.rcx{display:flex;justify-content:space-between;border-bottom:3px solid #7fa88c;padding-bottom:6px}.rch table{width:100%;border-collapse:collapse;margin-top:8px}.rch td{padding:8px;border-bottom:1px solid #ddd}.rch td:first-child{width:35%;color:#666}.rcs{display:flex;justify-content:space-around;margin-top:20px;color:#888;font-size:12px}.rcs span{border-top:1px solid #aaa;width:35%;text-align:center;padding-top:4px}.rcc{text-align:center;color:#aaa;font-size:12px;height:6mm;line-height:6mm}.rcpg{padding:4mm 8mm 0}';
 let _pst=null,_pend=null;
 /* تجهيز محتوى الطباعة داخل الصفحة (shadow DOM) دون طباعة */
 function prepDoc(fullHtml,r){
@@ -3026,7 +3026,7 @@ function prepDoc(fullHtml,r){
  let css='',body='';
  if(fullHtml){const st=(fullHtml.match(/<style>([\s\S]*?)<\/style>/)||[])[1]||'';css=st.replace(/@import\s+url\([^)]*\)\s*;/g,'').replace(/body\{/,'.root{').replace(/\*\{margin:0;padding:0;box-sizing:border-box\}/,'.root,.root *{margin:0;padding:0;box-sizing:border-box}').replace(/@page\{[^}]*\}/,'');
   body=(fullHtml.match(/<body>([\s\S]*)<\/body>/)||[])[1]||'';body=body.replace(/<script[\s\S]*$/,'')}
- if(r)body+=`<div class="${fullHtml?'rcpg':''}" style="${fullHtml?'':'padding:4mm 8mm 0'}">${rcHTML(r)}</div>`;
+ if(r)body+=`<div class="${fullHtml?'pg rcpg':''}" style="padding:4mm 8mm 0">${rcHTML(r)}</div>`;
  const sr=p.shadowRoot||p.attachShadow({mode:'open'});
  sr.innerHTML=`<style>${css}${RCSS}.root{direction:rtl;font-family:Cairo,Arial,sans-serif;background:#fff;color:#222}</style><div class=root dir=rtl>${body}</div>`;
  return sr}
@@ -3034,8 +3034,9 @@ function prepDoc(fullHtml,r){
 function runPrint(after){
  const p=$('mxP');if(!p)return;
  if(_pst)_pst.remove();_pst=document.createElement('style');_pst.textContent='@page{size:A4;margin:0}';document.head.appendChild(_pst);
+ const prevOv=document.body.style.overflow;document.body.style.overflow='visible';
  document.body.classList.add('mxprint');let done=false;
- const end=()=>{if(done)return;done=true;document.body.classList.remove('mxprint');removeEventListener('afterprint',end);if(_pst){_pst.remove();_pst=null}if(after)after()};
+ const end=()=>{if(done)return;done=true;document.body.classList.remove('mxprint');document.body.style.overflow=prevOv;removeEventListener('afterprint',end);if(_pst){_pst.remove();_pst=null}if(after)after()};
  addEventListener('afterprint',end);
  try{print()}catch(e){console.error(e);end();return}
  setTimeout(end,60000)}
@@ -3046,14 +3047,15 @@ function printDoc(fullHtml,r,after){
  if(!imgs.length)return go();let n=imgs.length;imgs.forEach(i=>{i.onload=i.onerror=()=>{if(--n==0)go()}});setTimeout(()=>{if(n>0){n=0;go()}},2000)}
 /* نافذة ما بعد الحفظ: زر الطباعة ضغطة حقيقية من المستخدم */
 function askPrint(d,cash,wa,done){
- prepDoc(invHTML(invNorm(d)),cash?rcOf(d):null);
+ prepDoc(invHTML(invNorm(d)),null);
  let o=$('mxA');if(o)o.remove();o=document.createElement('div');o.id='mxA';
  o.style.cssText='position:fixed;inset:0;background:#000b;z-index:9600;display:flex;align-items:center;justify-content:center;padding:18px;direction:rtl';
  const bs='width:100%;padding:14px;border-radius:12px;font:inherit;font-weight:800;font-size:15px;cursor:pointer;margin-top:10px;border:1px solid var(--bdr);';
- o.innerHTML=`<div style="background:var(--bg2);color:var(--white);border:1px solid var(--gold3);border-radius:18px;padding:20px;width:100%;max-width:360px;text-align:center;font-family:Cairo,sans-serif"><div style="font-size:34px">✅</div><div style="font-weight:900;font-size:16px;margin:6px 0">تم حفظ الفاتورة</div><div style="color:var(--muted);font-size:13px">${esc(d.invoiceNo)}${cash?(d.remaining>0?' — دفعة جزئية 💵':' — نقدية 💵'):''}</div><button id="mxAp" style="${bs}background:var(--gold);color:#fff;border:0">🖨 ${cash?'طباعة الفاتورة + سند القبض':'طباعة الفاتورة'}</button><button id="mxAn" style="${bs}background:var(--bg3);color:var(--white)">${wa?'متابعة ('+(wa.label||'واتساب')+') ➜':'فاتورة جديدة ➜'}</button></div>`;
+ o.innerHTML=`<div style="background:var(--bg2);color:var(--white);border:1px solid var(--gold3);border-radius:18px;padding:20px;width:100%;max-width:360px;text-align:center;font-family:Cairo,sans-serif"><div style="font-size:34px">✅</div><div style="font-weight:900;font-size:16px;margin:6px 0">تم حفظ الفاتورة</div><div style="color:var(--muted);font-size:13px">${esc(d.invoiceNo)}${cash?(d.remaining>0?' — دفعة جزئية 💵':' — نقدية 💵'):''}</div><button id="mxAp" style="${bs}background:var(--gold);color:#fff;border:0">🖨 طباعة الفاتورة</button>${cash?`<button id="mxApRc" style="${bs}background:#2a8a3a;color:#fff;border:0">🖨 طباعة الفاتورة + سند القبض</button>`:''}<button id="mxAn" style="${bs}background:var(--bg3);color:var(--white)">${wa?'متابعة ('+(wa.label||'واتساب')+') ➜':'فاتورة جديدة ➜'}</button></div>`;
  document.body.appendChild(o);
  const fin=()=>{o.remove();const q=$('mxP');if(q&&q.shadowRoot)q.shadowRoot.innerHTML='';if(wa)wa();else done()};
- $('mxAp').onclick=()=>runPrint(null);
+ $('mxAp').onclick=()=>{prepDoc(invHTML(invNorm(d)),null);runPrint(null)};
+ if(cash)$('mxApRc').onclick=()=>{prepDoc(invHTML(invNorm(d)),rcOf(d));runPrint(null)};
  $('mxAn').onclick=fin}
 function pp(h){let p=$('mxP');if(!p){p=document.createElement('div');p.id='mxP';document.body.appendChild(p)}p.innerHTML=h;const st=document.createElement('style');st.textContent='@page{size:A4;margin:8mm}';document.head.appendChild(st);document.body.classList.add('mxprint');const end=()=>{document.body.classList.remove('mxprint');st.remove();removeEventListener('afterprint',end)};addEventListener('afterprint',end);setTimeout(()=>print(),200)}
 const wa=(p,t)=>{p=String(p||'').replace(/\D/g,'');if(p[0]=='0')p='964'+p.slice(1);window.open('https://wa.me/'+p+'?text='+encodeURIComponent(t),'_blank')};
