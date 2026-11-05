@@ -498,6 +498,7 @@ html,body{max-width:100%;overflow-x:hidden;overscroll-behavior-x:none;-webkit-te
 .qty-in{padding:2px 4px;font-size:15px;height:32px}.add-btn{padding:0 6px;font-size:14px;height:32px;line-height:32px}.card-act{gap:5px;padding-bottom:9px}.rem-hint{font-size:11px}
 .det-price-box{display:flex;justify-content:space-between;align-items:center;border:2px solid var(--gold);background:rgba(127,168,140,.2);border-radius:12px;padding:8px 14px;margin-bottom:10px;font-weight:900}.det-price-box b{font-size:26px;color:#fff}
 .pay-seg{display:flex;gap:6px;margin-top:4px}.pay-seg button{flex:1;padding:10px 4px;border-radius:10px;border:1px solid var(--bdr);background:var(--bg3);color:var(--white);font-family:'Cairo',sans-serif;font-weight:800;font-size:14px}.pay-seg button.on{background:var(--gold);color:#0d1117;border-color:var(--gold)}
+.grp-hdr{grid-column:1/-1;text-align:center;font-size:20px;font-weight:900;color:#fff;background:rgba(127,168,140,.22);border:2px solid var(--gold3);border-radius:14px;padding:10px 14px;margin:6px 0 2px}
 </style>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1064,14 +1065,15 @@ async function init() {
     const H = skip ? rows[0].map(x=>String(x).trim()) : [];
     const ci = (re,d)=>{const k=H.findIndex(h=>re.test(h));return k>=0?k:d;};
     const cN=ci(/اسم|name/i,0), cC=ci(/^\s*(ال)?كود\s*$|^code$/i,1), cB=ci(/باركود|barcode/i,2), cP=ci(/تعبئة|كرتون|عدد القطع|pack/i,3),
-          cPr=ci(/سعر|price/i,4), cCo=ci(/شركة|company|brand/i,5), cR=ci(/باقي|متبقي|مخزون|المخزون|الكمية|رصيد|stock|qty|rem/i,6), cS=ci(/قسم|section|categor/i,7);
+          cPr=ci(/سعر|price/i,4), cCo=ci(/شركة|company|brand/i,5), cR=ci(/باقي|متبقي|مخزون|المخزون|الكمية|رصيد|stock|qty|rem/i,6), cS=ci(/قسم|section|categor/i,7), cT=ci(/نوع|type/i,-1), cA=ci(/عمر|age/i,-1);
     items = (skip?rows.slice(1):rows)
       .filter(r=>String(r[cN]||'').trim())
       .map((r,i)=>({
         id:i, name:String(r[cN]||'').trim(), code:String(r[cC]||'').trim(),
         barcode:String(r[cB]||'').trim(), pack:Number(r[cP])||0,
         price:parseFloat(r[cPr])||0, company:String(r[cCo]||'').trim(),
-        rem:Number(String(r[cR]).replace(/[^\d.-]/g,''))||0, section:String(r[cS]||'').trim()
+        rem:Number(String(r[cR]).replace(/[^\d.-]/g,''))||0, section:String(r[cS]||'').trim(),
+        ptype:cT>=0?String(r[cT]||'').trim():'', age:cA>=0?String(r[cA]||'').trim():''
       }));
     items.forEach(x=>x.rem0=x.rem); if(window.MZ) MZ.applyStock();
     await loadManualItems();   // مع نسخة محفوظة للعمل بدون إنترنت
@@ -1113,7 +1115,7 @@ function applyF(){
     if(co&&it.company!==co) return false;
     if(sec&&it.section!==sec) return false;
     if(onlyStock&&it.rem<=0) return false;
-    if(q&&![it.name,it.code,it.barcode,it.company,it.section].some(v=>v.toLowerCase().includes(q))) return false;
+    if(q&&![it.name,it.code,it.barcode,it.company,it.section,it.ptype||'',it.age||''].some(v=>v.toLowerCase().includes(q))) return false;
     return true;
   });
   filtered.sort((a,b)=>{
@@ -1125,6 +1127,16 @@ function applyF(){
     if(sort==='rem-asc')   return a.rem-b.rem;
     return a.id-b.id;
   });
+  // كتالوج: تجميع حسب نوع المنتج + العمر (فقط إذا وُجدت القيم في Excel)
+  if(filtered.some(it=>it.ptype||it.age)){
+    const gk=it=>(it.ptype||'')+'\u0001'+(it.age||''), tk=it=>it.ptype||'';
+    const tOrder=[],gOrder=[];
+    filtered.forEach(it=>{if(!tOrder.includes(tk(it)))tOrder.push(tk(it));if(!gOrder.includes(gk(it)))gOrder.push(gk(it));});
+    filtered=filtered.map((it,i)=>({it,i})).sort((a,b)=>
+      (tk(a.it)?tOrder.indexOf(tk(a.it)):-1)-(tk(b.it)?tOrder.indexOf(tk(b.it)):-1) ||
+      ((a.it.age?1:0)-(b.it.age?1:0)) ||
+      gOrder.indexOf(gk(a.it))-gOrder.indexOf(gk(b.it)) || a.i-b.i).map(x=>x.it);
+  }
   document.getElementById('sc').textContent=filtered.length;
   document.getElementById('tc').textContent=items.length;
   renderGrid();
@@ -1234,7 +1246,13 @@ function renderGrid(){
 
   // عرض المنتجات بشكل موحد ومستقر داخل الـ Grid الأساسي دائماً لمنع تداخل بطاقات الصور
   grid.style.display = '';
-  grid.innerHTML = filtered.map((it, idx) => cardHTML(it, idx)).join('');
+  let _pk=null;
+  grid.innerHTML = filtered.map((it, idx) => {
+    const t=[it.ptype,it.age].filter(Boolean).join(' '), k=(it.ptype||'')+'\u0001'+(it.age||'');
+    let h='';
+    if(k!==_pk){ if(t) h='<div class="grp-hdr">'+t.replace(/[<>&]/g,'')+'</div>'; _pk=k; }
+    return h + cardHTML(it, idx);
+  }).join('');
   grid.className = curView === 'l' ? 'lv' : '';
   
   // تشغيل التحميل الذكي للصور
