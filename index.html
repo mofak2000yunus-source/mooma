@@ -798,6 +798,7 @@ function loadLoginLogo(){
   </div>
   <div class="hdr-r3">
     <button class="btn btn-gold" onclick="openOrd()" style="padding:7px 13px;font-size:12px;">🛒 الطلبية <span class="cbadge" id="cbadge">0</span></button>
+<button class="btn" id="grpBtn" onclick="toggleGrp()" style="padding:7px 13px;font-size:12px;display:none"></button>
     <button class="btn btn-stock" id="bstock" onclick="togStock()" style="padding:7px 13px;font-size:12px;">✅ إظهار الباقي</button>
     <button class="btn" id="btnPdf" onclick="openPdf()" style="padding:7px 13px;font-size:12px;background:var(--bg3);color:var(--white);border:1px solid var(--bdr);">📄 PDF</button>
     <div class="vgrp" id="zoomGrp">
@@ -1106,6 +1107,8 @@ function buildFilters(){
 }
 
 // ══ FILTER ══
+let _grpOn = localStorage.getItem('mooma_grp') !== '0';
+function toggleGrp(){ _grpOn=!_grpOn; localStorage.setItem('mooma_grp',_grpOn?'1':'0'); applyF(); }
 function applyF(){
   const q=document.getElementById('srch').value.toLowerCase().trim();
   const co=document.getElementById('coF').value;
@@ -1128,7 +1131,7 @@ function applyF(){
     return a.id-b.id;
   });
   // كتالوج: تجميع حسب نوع المنتج + العمر (فقط إذا وُجدت القيم في Excel)
-  if(filtered.some(it=>it.ptype||it.age)){
+  if(_grpOn && filtered.some(it=>it.ptype||it.age)){
     const gk=it=>(it.ptype||'')+'\u0001'+(it.age||''), tk=it=>it.ptype||'';
     const tOrder=[],gOrder=[];
     filtered.forEach(it=>{if(!tOrder.includes(tk(it)))tOrder.push(tk(it));if(!gOrder.includes(gk(it)))gOrder.push(gk(it));});
@@ -1246,11 +1249,11 @@ function renderGrid(){
 
   // عرض المنتجات بشكل موحد ومستقر داخل الـ Grid الأساسي دائماً لمنع تداخل بطاقات الصور
   grid.style.display = '';
-  let _pk=null;
+  let _pk=null; { const gb=document.getElementById('grpBtn'); if(gb){ const has=items.some(i=>i.ptype||i.age); gb.style.display=has?'':'none'; gb.textContent=_grpOn?'🗂️ مجمّع':'📋 عادي'; } }
   grid.innerHTML = filtered.map((it, idx) => {
     const t=[it.ptype,it.age].filter(Boolean).join(' '), k=(it.ptype||'')+'\u0001'+(it.age||'');
     let h='';
-    if(k!==_pk){ if(t) h='<div class="grp-hdr">'+t.replace(/[<>&]/g,'')+'</div>'; _pk=k; }
+    if(k!==_pk){ if(t && _grpOn) h='<div class="grp-hdr">'+t.replace(/[<>&]/g,'')+'</div>'; _pk=k; }
     return h + cardHTML(it, idx);
   }).join('');
   grid.className = curView === 'l' ? 'lv' : '';
