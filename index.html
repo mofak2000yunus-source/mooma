@@ -1567,7 +1567,7 @@ function toggleTheme(){
 /* رقم الفاتورة التالي = الأكبر بين العدّاد المحلي وأعلى رقم محفوظ في قاعدة البيانات (لا يعود إلى 1 بعد حذف التطبيق) */
 function nextInvNo(){let l=0;try{l=parseInt(localStorage.getItem('inv_counter')||'0')||0}catch(e){}
 let m=0;try{m=(window.MZ&&MZ.invMax)?MZ.invMax():0}catch(e){}
-const n=Math.max(l,m)+1;try{localStorage.setItem('inv_counter',n)}catch(e){}return n}
+return Math.max(l,m)+1;}
 function openOrd(){
   const now=new Date();
   document.getElementById('ordDate').textContent=now.toLocaleDateString('ar',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
