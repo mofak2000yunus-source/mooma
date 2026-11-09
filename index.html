@@ -3240,7 +3240,7 @@ function applePrint(fullHtml,r){
  const url=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'}));
  const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove();
  setTimeout(()=>URL.revokeObjectURL(url),60000)}
-function oldIframePrint(h){ printDoc(h); }catch(e){}setTimeout(()=>f.remove(),6e4)},500)};document.body.appendChild(f)}
+function oldIframePrint(h){ printDoc(h); }
 function P(d,withInv,r,alt){
  if(isApple()){applePrint(withInv?invHTML(invNorm(d)):'',r);return}
  if(r){prepDoc('',r);runPrint(null);return}
