@@ -1732,7 +1732,7 @@ const cp=Math.min(10,Math.max(1,parseInt(localStorage.getItem('mooma_copies'))||
 const RH=24,AV1=173,AVN=246,FH=76,C1=Math.floor(AV1/RH),CN=Math.floor(AVN/RH),L1=Math.floor((AV1-FH)/RH),LN=Math.floor((AVN-FH)/RH);
 const pgs=[];{let i=0;const n=d.rows.length;for(let p=0;;p++){const f=p==0,full=f?C1:CN,wf=f?L1:LN,left=n-i;
  if(left<=wf){pgs.push({f,last:true,cap:wf,s:i,e:n});break}
- const t=left<=full?left-1:full;pgs.push({f,last:false,cap:full,s:i,e:i+t});i+=t}}
+ const t=Math.min(full,left);pgs.push({f,last:false,cap:full,s:i,e:i+t});i+=t}}
 const NP=pgs.length,no=ar(String(d.no).replace(/INV\s*-?\s*/i,'')),
 row=(r,i)=>`<tr><td>${i+1}</td><td>${r.im?`<img class=thm src="${E(r.im)}" onerror="this.style.visibility='hidden'">`:''}</td><td><div class=nm><b style="font-size:16px">${E(r.n)}</b><br><small>${E(r.c)}${r.co?' · '+E(r.co):''}</small></div></td><td>${bcSvg(r.bc)}</td><td>${nf(r.p)}</td><td><div class="q-box">${r.q}</div></td><td><b style="font-size:16px">${nf(r.p*r.q)}</b></td></tr>`,
 blank='<tr class=bl><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>',
@@ -1743,7 +1743,7 @@ ${d.cid?`<div class=db><div><small>الدين السابق</small><br><b>${nf(d.
 head1=`<div class=lg><img src="${LOGO_URI}"></div><div class=hd><div class=ha><b>وكيل Mooma Baby</b><div>Yunus</div><div dir=ltr style="text-align:right">0770 784 9922</div></div><div class=hc>الفاتورة</div><div class=pn>${NP>1?'صفحة 1 من '+NP:''}</div></div>
 <div class=bx><div><small>الزبون</small><br><b>${E(d.cn)}</b>${d.ph?`<br>📞 ${E(d.ph)}`:''}${d.ad?`<br>📍 ${E(d.ad)}`:''}</div><div><small>حالة الدفع</small><br><b style="color:${rem?'#d9534f':'#3d8b5a'}">${rem?(d.paid?'دفع جزئي':'آجلة'):'مدفوعة'}</b>${d.notes?`<br><small>ملاحظات: ${E(d.notes)}</small>`:''}</div><div><small>رقم الوصل</small><br><b style="font-size:18px">${no}</b><br><small>${ar(ds)}</small></div></div>`,
 pg=pgs.map((p,k)=>{const n=p.e-p.s,rs=d.rows.slice(p.s,p.e).map((r,j)=>row(r,p.s+j)).join('')+(n?blank.repeat(Math.max(0,p.cap-n)):'');
- return `<div class=pg>${d.st=='cancelled'?'<div class=cx>ملغاة</div>':''}${p.f?head1:`<div class=cs><b>الفاتورة ${no}</b><span>${E(d.cn)}</span><span>صفحة ${k+1} من ${NP}</span></div>`}${n?`<table>${thead}<tbody>${rs}</tbody></table>`:''}${p.last?foot:''}</div>`}).join('');
+ return `<div class=pg>${d.st=='cancelled'?'<div class=cx>ملغاة</div>':''}${p.f?head1:`<div class=cs><b>الفاتورة ${no}</b><span>${E(d.cn)}</span><span>صفحة ${k+1} من ${NP}</span></div>`}${n?`<table>${thead}<tbody>${rs}</tbody></table>`:''}${p.last?(n?foot:foot.replace('class=fw','class="fw top"')):''}</div>`}).join('');
 return `<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><meta name="viewport" content="width=794"><style>@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');@page{size:A4;margin:0}*{margin:0;padding:0;box-sizing:border-box}
 body{font-family:Cairo,Arial,sans-serif;color:#000;font-size:16px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .pg{position:relative;width:210mm;height:286mm;margin:0 auto;padding:6mm 9mm;overflow:hidden;display:flex;flex-direction:column;page-break-after:always;break-after:page}.pg:last-child{page-break-after:auto;break-after:auto}
@@ -1765,7 +1765,7 @@ th:nth-child(1),td:nth-child(1){width:9mm}th:nth-child(2),td:nth-child(2){width:
 .nm{max-height:22mm;overflow:hidden;line-height:1.3}.nm b{font-size:14px!important;line-height:1.3}.nm small{font-size:11px;line-height:1.3}
 tbody tr:nth-child(even) td{background:#f6fafa}
 .q-box{display:inline-block;border:2px solid #000;border-radius:6px;padding:6px 10px;font-size:20px;font-weight:900;background:#fff;color:#000;min-width:45px;text-align:center}
-.fw{margin-top:auto;height:76mm;flex:none;display:flex;flex-direction:column;justify-content:flex-end}
+.fw.top{margin-top:6mm;height:auto}.fw{margin-top:auto;height:76mm;flex:none;display:flex;flex-direction:column;justify-content:flex-end}
 .ft{display:flex;justify-content:space-between;align-items:flex-end;margin-top:0;gap:14px}.tt{width:60%}
 .tt>div{display:flex;justify-content:space-between;padding:5px 0}.tt .g{font-size:19px;font-weight:900;color:#31637e;border-top:2px solid #31637e}
 .db{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;text-align:center}
